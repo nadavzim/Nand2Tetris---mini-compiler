@@ -1,5 +1,5 @@
 package object vm_to_hack {
-  private var count: Int = 0
+  private var counter: Int = 0
 
   /**
    * add_index - add index times "A=A+1" to the asm code
@@ -88,24 +88,62 @@ package object vm_to_hack {
           + "A=M\n"
           + "M=D\n" // *SP = D
           + INC_SP + "\n" // SP++
+
       case "pop" =>
-      // TODO: complete ynon
+        asm = "@SP\n"
+          + "A=M-1\n"
+          + "D=M\n"
+        words(1) match {
+          case "local" | "this" | "that" | "argument" =>
+            words(1) match {
+              case "local" =>
+                asm += "@LCL\n"
+              case "argument" =>
+                asm += "@ARG\n"
+              case "this" =>
+                asm += "@THIS\n"
+              case "that" =>
+                asm += "@THAT\n"
+            }
+            asm += "A=M\n"
+              + add_index(words(2))
+
+          case "temp" =>
+            asm += "@R5\n"
+              + add_index(words(2))
+
+          case "static" =>
+            asm += "@STATIC." + words(2) + "\n"
+            + "D=M\n"
+
+          case "pointer" => {
+            if words(2) == "0" then
+              asm += "@THIS\n"
+            else {
+              asm += "@THAT\n"
+            }
+          }
+        }
+        asm += "M=D\n" // *addr = D
+          + DEC_SP
+          return asm
+
       case "add" | "sub" | "eq" | "lt" | "gt" | "or" | "and" =>
         asm += "@SP\n"
-          + "A = M -1\n"
-          + "D = M\n"
-          + "A = A-1\n"
+          + "A=M -1\n"
+          + "D=M\n"
+          + "A=A-1\n"
 
         words(0) match {
           case "add" =>
-            asm += "M = D + M\n"
+            asm += "M=M+D\n"
           case "sub" =>
-            asm += "M = D - M\n"
+            asm += "M=M-D\n"
 
           case "eq" | "gt" | "lt" => //==, >, <
-            count = count + 1
-            asm += asm + "D = D - M\n"
-              + "@IF_TRUE" + count.toString + "\n"
+            counter = counter + 1
+            asm += asm + "D=D-M\n"
+              + "@IF_TRUE" + counter.toString + "\n"
 
             words(0) match {
               case "eq" =>
@@ -118,34 +156,36 @@ package object vm_to_hack {
 
             }
 
-            asm += "D = 0\n" //D = 0
+            asm += "D=0\n" //D = 0
               + "@SP\n"
-              + "A = M - 1\n"
-              + "A = A - 1\n"
-              + "M = D\n"
-              + "@IF_FALSE" + count.toString + "\n"
+              + "A=M-1\n"
+              + "A=A-1\n"
+              + "M=D\n"
+              + "@IF_FALSE" + counter.toString + "\n"
               + "0;JMP\n"
-              + "(IF_TRUE" + count.toString + ")\n"
-              + "D = -1\n" //D = -1
+              + "(IF_TRUE" + counter.toString + ")\n"
+              + "D=-1\n" //D = -1
               + "@SP\n"
-              + "A = M - 1\n"
-              + "A = A - 1\n"
-              + "M = D\n"
-              + "(IF_FALSE" + count.toString + ")\n"
+              + "A=M-1\n"
+              + "A=A-1\n"
+              + "M=D\n"
+              + "(IF_FALSE" + counter.toString + ")\n"
 
           case "and" =>
-            asm += "M = D & M\n"
+            asm += "M=D&M\n"
           case "or" =>
-            asm += "M = D | M\n"
+            asm += "M=D|M\n"
         }
         asm += DEC_SP
 
-      // TODO: complete ynon
-      case "not" =>
-      // TODO: complete ynon
-      case "neg" =>
-      // TODO: complete ynon
-      case default =>
+      case "not" | "neg" =>
+        asm = "@SP\n"
+          + "A=M-1\n"
+        if words(0) == "not" then
+          asm += "M=!M\n"
+        else
+          asm += "M=-M\n"
+      case _ =>
     }
     asm
   }
