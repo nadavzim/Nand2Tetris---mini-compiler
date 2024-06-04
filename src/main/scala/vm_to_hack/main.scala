@@ -1,3 +1,7 @@
+/*************************************************************************************************************
+*  nadav zimmerman and ynon hayun translator from vm to asm                                                  *
+*  exe1 (stage 07 of nand2tetris demo compiler project)                                                      *
+*************************************************************************************************************/
 package vm_to_hack
 
 import java.io.File
@@ -13,18 +17,19 @@ import java.nio.file.{Files, Paths}
 @main
 def main(path: String): Unit = {
   println("path: " + path + "\n")
-  var res = ""
+  var res = "// nadav and ynon translator from vm to asm\n\n" + vm_translator().bootstrap // the asm code.
   val directory = new File(path)
 
   if (directory.exists && directory.isDirectory) { // check if the path is a valid directory
-    val vmFiles = directory.listFiles.filter(file => file.isFile && file.getName.endsWith(".vm")) // get all .vm files
-    
+    var vmFiles = directory.listFiles.filter(file => file.isFile && file.getName.endsWith(".vm")) // get all .vm files
+    val (sysFiles, otherFiles) = vmFiles.partition(_.getName == "Sys.vm")
+    vmFiles = sysFiles ++ otherFiles // put Sys.vm first in the list
     for (file <- vmFiles) {
       // Perform some action on each .vm file
       val lines = Source.fromFile(file).mkString.split("\r\n") // read the file
       Source.fromFile(file).close()
       for (i <- lines) { 
-        res += "// " + i + "\n" + vm_to_hack.vm_to_asm(i) // convert the vm command to Hack asm command
+        res += "// " + i + "\n" + vm_translator().vm_to_asm(i, directory.getName) // convert the vm command to Hack asm command
       }
     }
     print(res)
