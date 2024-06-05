@@ -3,6 +3,7 @@
 *  exe1 (stage 07 of nand2tetris demo compiler project)                                                      *
 *************************************************************************************************************/
 package vm_to_hack
+import vm_to_hack.vm_translator.{bootstrap, vm_to_asm}
 
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -26,13 +27,13 @@ def main(path: String): Unit = {
     vmFiles = sysFiles ++ otherFiles // put Sys.vm first in the list
     for (file <- vmFiles) {
       if (vmFiles.length > 1) {
-        res += vm_translator().bootstrap
+        res += bootstrap
       }
       // Perform some action on each .vm file
       val lines = Source.fromFile(file).mkString.split("\r\n") // read the file
       Source.fromFile(file).close()
       for (i <- lines) { 
-        res += "// " + i + "\n" + vm_translator().vm_to_asm(i, directory.getName) // convert the vm command to Hack asm command
+        res += "// " + i + "\n" + vm_to_asm(i, directory.getName) // convert the vm command to Hack asm command
       }
     }
     print(res)

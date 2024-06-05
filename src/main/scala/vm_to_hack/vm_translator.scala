@@ -1,6 +1,6 @@
 package vm_to_hack
 
-class vm_translator {
+object vm_translator {
   val bootstrap: String = "//bootstrap\n"
     + "@256\n" // SP = 256
     + "D=A\n"
@@ -19,6 +19,7 @@ class vm_translator {
       res += "A=A+1\n"
       i -= 1
     }
+    return res
   }
 
   /**

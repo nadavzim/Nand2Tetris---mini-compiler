@@ -1,103 +1,86 @@
 package vm_to_hack
+import vm_to_hack.vm_translator
+import vm_to_hack.vm_translator.{DEC_SP, INC_SP, add_index}
 
 private var counter: Int = 0 
 class arithmetic_translator {
   def push_translate(cmd:Array[String], dir:String): String = {
-    var op = ""
-    cmd(1) match {
-      case "constant" =>
-        op = "@" + cmd(2) + "\n"
-          + "D=A\n" // D = x
-
-      case "local" =>
-        op = "@LCL\n"
-          + "A=M\n"
-          + vm_translator().add_index(cmd(2))
-          + "D=M\n" // D = LCL + index
-
-      case "argument" =>
-        op = "@ARG\n"
-          + "A=M\n"
-          + vm_translator().add_index(cmd(2))
-          + "D=M\n" // D = ARG + index
-
-      case "this" =>
-        op = "@THIS\n"
-          + "A=M\n"
-          + vm_translator().add_index(cmd(2))
-          + "D=M\n" // D = THIS + index
-
-      case "that" =>
-        op = "@THAT\n"
-          + "A=M\n"
-          + vm_translator().add_index(cmd(2))
-          + "D=M\n" // D = THAT + index
-
-      case "temp" =>
-        op = "@R5\n"
-          + vm_translator().add_index(cmd(2))
-          + "D=M\n" // D = R5 + index
-      case "static" =>
-        op = "@STATIC." + cmd(2) + "\n"
-          + "D=M\n" // D = STATIC.i
-
-      case "pointer" => {
-        if cmd(2) == "0" then
-          op = "@THIS\n"
-        else {
-          op = "@THAT\n"
-          op += "D=M\n" // D = THIS/THAT
+    var asm = ""
+    val number: String = cmd(2)
+    val command = cmd(1)
+    command match {
+      case "constant" | "temp" | "argument" | "this" | "that" | "local" =>
+        asm += s"@$number\n"
+        asm += "D= A\n" //insert X into D
+        command match {
+          case "local" | "this" | "that" | "argument" =>
+            //insert LCL/THIS/THAT/ARG into A
+            command match {
+              case "local" => asm += "@LCL\n"
+              case "this" => asm += "@THIS\n"
+              case "that" => asm += "@THAT\n"
+              case "argument" => asm += "@ARG\n"
+            }
+            asm += "A=M+D\n" //insert RAM[LCL/THIS/THAT/ARG] + X into A
+            asm += "D=M\n" //insert RAM[RAM[LCL/THIS/THAT/ARG] + X] into D
+          case "temp" =>
+            asm += "@5\n" //insert 5 into A
+            asm += "A=D+A\n" //insert 5 + x into A
+            asm += "D=M\n" //insert RAM[5 + x] into D
+          case _ =>
         }
-      }
+      case "pointer" =>
+        number match {
+          case "1" => asm += "@THAT\n"
+          case "0" => asm += "@THIS\n"
+        }
+        asm += "D=M\n"
+      case "static" =>
+        asm += "@" + dir + "." + number + "\n"
+        asm += "D=M\n"
     }
-    return op
-      + "@SP\n"
-      + "A=M\n"
-      + "M=D\n" // *SP = D
-      + vm_translator().INC_SP + "\n" // SP++
 
+    asm += "@SP\n" //reset A to SP
+    asm += "A=M\n" //get the top of the stack
+    asm += "M=D\n" //insert D into the top of the the stack
+    asm += "@SP\n"
+    asm += "M=M+1\n"
+
+    asm
   }
   def pop_translate(cmd:Array[String], dir:String): String = {
     var asm = ""
-    asm = "@SP\n"
-      + "A=M-1\n"
-      + "D=M\n"
-    cmd(1) match {
+    asm += "@SP\n"
+    asm += "A=M-1\n"
+    asm += "D=M\n"
+    val command = cmd(1)
+    val number: String = cmd(2).replaceAll("\\s", "")
+    command match {
       case "local" | "this" | "that" | "argument" =>
-        cmd(1) match {
-          case "local" =>
-            asm += "@LCL\n"
-          case "argument" =>
-            asm += "@ARG\n"
-          case "this" =>
-            asm += "@THIS\n"
-          case "that" =>
-            asm += "@THAT\n"
+        command match {
+          case "this" => asm += "@THIS\n"
+          case "that" => asm += "@THAT\n"
+          case "argument" => asm += "@ARG\n"
+          case "local" => asm += "@LCL\n"
         }
         asm += "A=M\n"
-          + vm_translator().add_index(cmd(2))
-
+        for (i <- 0 until number.toInt)
+          asm += "A=A+1\n"
       case "temp" =>
-        asm += "@R5\n"
-          + vm_translator().add_index(cmd(2))
-
-      case "static" =>
-        asm += "@STATIC." + cmd(2) + "\n"
-          + "D=M\n"
-
-      case "pointer" => {
-        if cmd(2) == "0" then
-          asm += "@THIS\n"
-        else {
+        asm += s"@${(5 + number.toInt).toString}\n"
+      case "pointer" =>
+        if (number == "1")
           asm += "@THAT\n"
-        }
-      }
+        if (number == "0")
+          asm += "@THIS\n"
+      case "static" =>
+        asm += "@" + dir + "." + number + "\n" //
     }
-    asm += "M=D\n" // *addr = D
-      + vm_translator().DEC_SP
+    asm += "M=D\n"
+    asm += DEC_SP
     asm
   }
-  def binary_op_translate(cmd:Array[String], dir:String): String = {
+    def binary_op_translate(cmd:Array[String], dir:String): String = {
     var asm = ""
     asm += "@SP\n"
       + "A=M -1\n"
@@ -133,7 +116,7 @@ class arithmetic_translator {
       case "or" =>
         asm += "M=D|M\n"
     }
-    asm + vm_translator().DEC_SP + "\n"
+    asm + DEC_SP + "\n"
   }
 
   private def compare_translate(cmd:Array[String], dir:String): String = {
@@ -152,21 +135,7 @@ class arithmetic_translator {
         asm += "D;JGT\n"
 
     }
-
-    asm + "D=0\n" //D = 0
-      + "@SP\n"
-      + "A=M-1\n"
-      + "A=A-1\n"
-      + "M=D\n"
-      + "@IF_FALSE" + counter.toString + "\n"
-      + "0;JMP\n"
-      + "(IF_TRUE" + counter.toString + ")\n"
-      + "D=-1\n" //D = -1
-      + "@SP\n"
-      + "A=M-1\n"
-      + "A=A-1\n"
-      + "M=D\n"
-      + "(IF_FALSE" + counter.toString + ")\n"
+    asm
   }
   def unary_op_translate(cmd:Array[String], dir:String): String = {
     var asm = ""
