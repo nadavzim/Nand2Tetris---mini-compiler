@@ -6,7 +6,6 @@ class vm_translator {
     + "D=A\n"
     + "@SP\n"
     + "M=D\n"
-
   /**
    * add_index - add index times "A=A+1" to the asm code
    *
@@ -44,15 +43,15 @@ class vm_translator {
       case "label" =>
         asm = program_flow_translator().label_translate(words, dir)
 //      case "goto" | "" =>
-//        asm = program_flow_translator().goto_translate(words, dir)
+//        asm = program_flow_translator().goto_translate(words, dir) // TODO: ynon 
 //      case "if-goto" =>
-//        asm = program_flow_translator().if_goto_translate(words, dir)
+//        asm = program_flow_translator().if_goto_translate(words, dir) // TODO: ynon
 //      case "call" =>
-//        asm = program_flow_translator().call_translate(words, dir)
-//      case "function" =>
-//        asm = program_flow_translator().function_translate(words, dir)
-//      case "return" =>
-//        asm = program_flow_translator().return_translate(words, dir)
+//        asm = program_flow_translator().call_translate(words, dir) // TODO: ynon 
+      case "function" =>
+        asm = program_flow_translator().function_translate(words, dir)
+      case "return" =>
+        asm = program_flow_translator().return_translate(words, dir) 
       case "push" => // command: push x
         asm += arithmetic_translator().push_translate(words, dir)
       case "pop" =>

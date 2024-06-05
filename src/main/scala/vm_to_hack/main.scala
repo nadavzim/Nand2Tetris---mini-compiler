@@ -17,7 +17,7 @@ import java.nio.file.{Files, Paths}
 @main
 def main(path: String): Unit = {
   println("path: " + path + "\n")
-  var res = "// nadav and ynon translator from vm to asm\n\n" + vm_translator().bootstrap // the asm code.
+  var res = "// nadav and ynon translator from vm to asm\n\n" // the asm code.
   val directory = new File(path)
 
   if (directory.exists && directory.isDirectory) { // check if the path is a valid directory
@@ -25,6 +25,9 @@ def main(path: String): Unit = {
     val (sysFiles, otherFiles) = vmFiles.partition(_.getName == "Sys.vm")
     vmFiles = sysFiles ++ otherFiles // put Sys.vm first in the list
     for (file <- vmFiles) {
+      if (vmFiles.length > 1) {
+        res += vm_translator().bootstrap
+      }
       // Perform some action on each .vm file
       val lines = Source.fromFile(file).mkString.split("\r\n") // read the file
       Source.fromFile(file).close()
