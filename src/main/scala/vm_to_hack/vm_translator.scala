@@ -38,19 +38,22 @@ object vm_translator {
    * @return the Hack asm command
    */
   def vm_to_asm(vm_cmd: String, dir:String = ""): String = {
+    var funcCount = 0
     var asm = ""
     val words = vm_cmd.trim.split(" ")
     words(0) match {
       case "label" =>
         asm = program_flow_translator().label_translate(words, dir)
-//      case "goto" | "" =>
-//        asm = program_flow_translator().goto_translate(words, dir) // TODO: ynon 
-//      case "if-goto" =>
-//        asm = program_flow_translator().if_goto_translate(words, dir) // TODO: ynon
-//      case "call" =>
-//        asm = program_flow_translator().call_translate(words, dir) // TODO: ynon 
+      case "goto" =>
+        asm = program_flow_translator().goto_translate(words, dir)
+      case "if-goto" =>
+        asm = program_flow_translator().if_goto_translate(words, dir)
+      case "call" =>
+        funcCount += 1
+        asm = program_flow_translator().call_translate(words, dir, funcCount)
       case "function" =>
-        asm = program_flow_translator().function_translate(words, dir)
+        funcCount += 1
+        asm = program_flow_translator().function_translate(words, dir, funcCount)
       case "return" =>
         asm = program_flow_translator().return_translate(words, dir) 
       case "push" => // command: push x
