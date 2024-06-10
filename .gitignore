@@ -3,3 +3,4 @@
 /target/
 /target/scala-3.3.3/classes/
 /res.asm
+/.idea
