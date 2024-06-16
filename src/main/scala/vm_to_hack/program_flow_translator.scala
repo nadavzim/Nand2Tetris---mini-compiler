@@ -12,9 +12,10 @@ class program_flow_translator {
 
   def if_goto_translate(cmd: Array[String], dir: String): String = {
     return "@SP\n" +
-      "AM=M-1\n" +
+      "M=M-1\n" + // todo - check if AM=M-1 is correct or M=M-1
+      "A=M\n" +
       "D=M\n" +
-      "@+dir" + "." +cmd(1)+ "\n" +
+      "@" + dir + "." +cmd(1)+ "\n" +
       "D;JNE\n"
   }
 

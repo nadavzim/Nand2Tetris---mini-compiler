@@ -25,15 +25,25 @@ def main(path: String): Unit = {
     var vmFiles = directory.listFiles.filter(file => file.isFile && file.getName.endsWith(".vm")) // get all .vm files
     val (sysFiles, otherFiles) = vmFiles.partition(_.getName == "Sys.vm")
     vmFiles = sysFiles ++ otherFiles // put Sys.vm first in the list
-    for (file <- vmFiles) {
-      if (vmFiles.length > 1) {
-        res += bootstrap
-      }
-      // Perform some action on each .vm file
-      val lines = Source.fromFile(file).mkString.split("\r\n") // read the file
-      Source.fromFile(file).close()
-      for (i <- lines) { 
+
+    if (vmFiles.length > 1) {
+      res += bootstrap // add the bootstrap code
+      res += "\n" + vm_to_asm("call Sys.init 0", directory.getName) // call Sys.init
+
+    }
+    if(vmFiles.length == 1){
+      val lines = readLines(vmFiles(0))
+      for (i <- lines) {
         res += "// " + i + "\n" + vm_to_asm(i, directory.getName) // convert the vm command to Hack asm command
+      }
+    }
+    else{
+      for (file <- vmFiles) {
+        // Perform some action on each .vm file
+        val lines = readLines(file)
+        for (i <- lines) {
+          res += "// " + i + "\n" + vm_to_asm(i, directory.getName) // convert the vm command to Hack asm command
+    }
       }
     }
     print(res)
@@ -43,4 +53,16 @@ def main(path: String): Unit = {
     println(s"The path $path is not a valid directory.")
   }
 }
+
+/**
+ * readLines - read the lines of a file
+ * @param file
+ * @return the content of the file split to lines
+ */
+ def readLines(file: File): List[String] = {
+   val source = Source.fromFile(file)
+   val lines = source.getLines().toList
+   source.close()
+   lines
+ }
 

@@ -1,11 +1,14 @@
 package vm_to_hack
-
+private var funcCount: Int = 0
 object vm_translator {
   val bootstrap: String = "//bootstrap\n"
     + "@256\n" // SP = 256
     + "D=A\n"
     + "@SP\n"
     + "M=D\n"
+  
+  val sys_init: String = "@Sys.init\n"
+    + "0;JMP\n"
   /**
    * add_index - add index times "A=A+1" to the asm code
    *
@@ -38,7 +41,6 @@ object vm_translator {
    * @return the Hack asm command
    */
   def vm_to_asm(vm_cmd: String, dir:String = ""): String = {
-    var funcCount = 0
     var asm = ""
     val words = vm_cmd.trim.split(" ")
     words(0) match {
