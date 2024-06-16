@@ -1,10 +1,11 @@
 package vm_to_hack
-import vm_to_hack.vm_translator
-import vm_to_hack.vm_translator.{DEC_SP, INC_SP, add_index}
 
-private var counter: Int = 0 
+import vm_to_hack.vm_translator.DEC_SP
+
+private var counter: Int = 0
+
 class arithmetic_translator {
-  def push_translate(cmd:Array[String], dir:String): String = {
+  def push_translate(cmd: Array[String], dir: String): String = {
     var asm = ""
     val number: String = cmd(2)
     val command = cmd(1)
@@ -26,7 +27,7 @@ class arithmetic_translator {
           case "temp" =>
             asm += "@5\n" //insert 5 into A
             asm += "A=D+A\n" //insert 5 + x into A
-            asm += "D=M\n" //insert RAM[5 + x] into D
+            asm += "D=M\n" //insert RAM[5 + x] into Dב
           case _ =>
         }
       case "pointer" =>
@@ -48,7 +49,8 @@ class arithmetic_translator {
 
     asm
   }
-  def pop_translate(cmd:Array[String], dir:String): String = {
+
+  def pop_translate(cmd: Array[String], dir: String): String = {
     var asm = ""
     asm += "@SP\n"
     asm += "A=M-1\n"
@@ -80,7 +82,8 @@ class arithmetic_translator {
     asm += DEC_SP
     asm
   }
-    def binary_op_translate(cmd:Array[String], dir:String): String = {
+
+  def binary_op_translate(cmd: Array[String], dir: String): String = {
     var asm = ""
     asm += "@SP\n"
       + "A=M -1\n"
@@ -119,7 +122,7 @@ class arithmetic_translator {
     asm + DEC_SP + "\n"
   }
 
-  private def compare_translate(cmd:Array[String], dir:String): String = {
+  private def compare_translate(cmd: Array[String], dir: String): String = {
     var asm = ""
     counter = counter + 1
     asm += asm + "D=D-M\n"
@@ -137,7 +140,8 @@ class arithmetic_translator {
     }
     asm
   }
-  def unary_op_translate(cmd:Array[String], dir:String): String = {
+
+  def unary_op_translate(cmd: Array[String], dir: String): String = {
     var asm = ""
     asm = "@SP\n"
       + "A=M-1\n"
