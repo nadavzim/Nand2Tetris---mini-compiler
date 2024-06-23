@@ -1,6 +1,7 @@
-package vm_to_hack
+package my_compiler.vm_to_hack
 
-import vm_to_hack.vm_translator.DEC_SP
+import my_compiler.vm_to_hack.vm_translator.DEC_SP
+
 
 private var counter: Int = 0
 

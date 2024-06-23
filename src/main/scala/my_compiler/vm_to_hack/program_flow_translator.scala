@@ -1,4 +1,4 @@
-package vm_to_hack
+package my_compiler.vm_to_hack
 
 class program_flow_translator {
   def label_translate(cmd: Array[String], dir: String): String = {
