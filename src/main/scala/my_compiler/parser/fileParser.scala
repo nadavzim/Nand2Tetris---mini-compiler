@@ -1,6 +1,7 @@
 package my_compiler.parser
 
 
+import my_compiler.Jack_to_vm.Parser.parsing
 import my_compiler.vm_to_hack.vm_translator.{bootstrap, vm_to_asm}
 import my_compiler.Jack_to_vm.Tokenizing.tokenizing
 
@@ -43,6 +44,8 @@ class fileParser {
               curFile = file.getName.split('.')(0)
               println(res)
               writeToFile(path, res)
+              fileSrc = "xml"
+              res = iterateFile(file, fileSrc)
       }) //
     }
     else {
@@ -75,7 +78,7 @@ class fileParser {
       if (srcFile == "jack")
         res += tokenizing(lines.reduce((x,y) => x+ '\n' + y)) + "\n" // convert the jack content to vm code
       else if (srcFile == "xml")
-        res += line // copy the xml code todo: implement the xml to vm translator
+        parsing.parser(file.toString)
     res
   }
 
