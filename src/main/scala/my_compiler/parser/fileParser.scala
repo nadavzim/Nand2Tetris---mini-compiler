@@ -44,9 +44,9 @@ class fileParser {
               curFile = file.getName.split('.')(0)
               println(res)
               writeToFile(path, res)
-              fileSrc = "xml"
-              res = iterateFile(file, fileSrc)
-      }) //
+      })
+        val xmlFiles = directory.listFiles.filter(file => file.isFile && file.getName.endsWith(".xml")) // get all .xml files
+        xmlFiles.foreach { file => parsing.parser(file.toString) }
     }
     else {
       sys.error(s"The path $path is not a valid directory.")
@@ -77,8 +77,8 @@ class fileParser {
     }
       if (srcFile == "jack")
         res += tokenizing(lines.reduce((x,y) => x+ '\n' + y)) + "\n" // convert the jack content to vm code
-      else if (srcFile == "xml")
-        parsing.parser(file.toString)
+//      else if (srcFile == "xml")
+//        parsing.parser(file.toString)
     res
   }
 
@@ -102,7 +102,7 @@ class fileParser {
   private def writeToFile(path: String, content: String): Unit = {
     val directory = new File(path)
     if (fileDst == "xml")
-      Files.write(Paths.get(path + "\\" + curFile + s"TTTT.$fileDst"), content.getBytes(StandardCharsets.UTF_8)) // TODO: change back to T after test's
+      Files.write(Paths.get(path + "\\" + curFile + s".$fileDst"), content.getBytes(StandardCharsets.UTF_8))
     else
       Files.write(Paths.get(path + "\\" + directory.getName + s".$fileDst"), content.getBytes(StandardCharsets.UTF_8))
   }
